@@ -43377,7 +43377,7 @@ class Window extends EventTarget
   /// Stream of `deviceorientation` events handled by this [Window].
   @DomName('Window.ondeviceorientation')
   @DocsEditable()
-  // http://dev.w3.org/geo/api/spec-source-orientation.html#devicemotion
+  // http://dev.w3.org/geo/api/spec-source-orientation.html#deviceorientation
   @Experimental()
   Stream<DeviceOrientationEvent> get onDeviceOrientation =>
       deviceOrientationEvent.forTarget(this);
