@@ -168,6 +168,9 @@ abstract final class String implements Comparable<String>, Pattern {
   /// It may work as a non-constant invocation on some platforms which
   /// have access to compiler options at run-time, but most ahead-of-time
   /// compiled platforms will not have this information.
+  ///
+  /// To access environment variables at runtime,
+  /// use `Platform.environment` from `dart:io`.
   // The .fromEnvironment() constructors are special in that we do not want
   // users to call them using "new". We prohibit that by giving them bodies
   // that throw, even though const constructors are not allowed to have bodies.
