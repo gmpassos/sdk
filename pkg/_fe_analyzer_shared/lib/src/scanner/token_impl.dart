@@ -84,24 +84,24 @@ class StringTokenImpl extends SimpleToken implements StringToken {
 
   @override
   String get lexeme {
+    final valueOrLazySubstring = this.valueOrLazySubstring;
     if (valueOrLazySubstring is String) {
       return valueOrLazySubstring;
     } else {
-      assert(valueOrLazySubstring is _LazySubstring);
-      dynamic data = valueOrLazySubstring.data;
-      int start = valueOrLazySubstring.start;
-      int end = start + (valueOrLazySubstring as _LazySubstring).length;
+      var lazySubstring = valueOrLazySubstring as _LazySubstring;
+      Object data = lazySubstring.data;
+      int start = lazySubstring.start;
+      int end = start + (lazySubstring as _LazySubstring).length;
       if (data is String) {
-        final bool canonicalize = valueOrLazySubstring.boolValue;
-        valueOrLazySubstring = canonicalize
+        final bool canonicalize = lazySubstring.boolValue;
+        return canonicalize
             ? canonicalizeSubString(data, start, end)
             : data.substring(start, end);
       } else {
-        final bool isAscii = valueOrLazySubstring.boolValue;
-        valueOrLazySubstring =
-            canonicalizeUtf8SubString(data, start, end, isAscii);
+        final bytes = data as Uint8List;
+        final bool isAscii = lazySubstring.boolValue;
+        return canonicalizeUtf8SubString(bytes, start, end, isAscii);
       }
-      return valueOrLazySubstring;
     }
   }
 
