@@ -12516,12 +12516,228 @@ abstract final class NodeList<E extends AstNode> implements List<E> {
   E removeAt(int index);
 }
 
+/// This is an optimized version of a [List] of elements [E],
+/// allowing for memory reduction and
+/// optimization of [accept], [_get], and [_set].
+abstract class _NodeElements<E extends AstNode> {
+  Token? get beginToken;
+  Token? get endToken;
+  int get length;
+
+  const _NodeElements();
+
+  E _get(int index);
+  void _set(int index, E node, AstNodeImpl owner);
+
+  void accept(AstVisitor visitor) ;
+}
+
+final class _NodeElementsEmpty<E extends AstNode> extends _NodeElements<E> {
+  static final _instance = const _NodeElementsEmpty<Never>();
+
+  const _NodeElementsEmpty();
+
+  @override
+  Token? get beginToken => null;
+
+  @override
+  Token? get endToken => null;
+
+  @override
+  int get length => 0;
+
+  @override
+  E _get(int index) => throw RangeError("Index: $index, Size: 0");
+
+  @override
+  void _set(int index, E node, AstNodeImpl owner) =>
+      throw RangeError("Index: $index, Size: 0");
+
+  @override
+  void accept(AstVisitor visitor) {}
+}
+
+final class _NodeElementsSingle<E extends AstNode> extends _NodeElements<E> {
+  E _element;
+
+  _NodeElementsSingle(this._element, AstNodeImpl owner) {
+    owner._becomeParentOf(_element as AstNodeImpl);
+  }
+
+  @override
+  Token? get beginToken => _element.beginToken;
+
+  @override
+  Token? get endToken => _element.beginToken;
+
+  @override
+  int get length => 1;
+
+  E _get(int index) {
+    if (index == 0) {
+      return _element;
+    } else {
+      throw RangeError("Index: $index, Size: 1");
+    }
+  }
+
+  @override
+  void _set(int index, E node, AstNodeImpl owner) {
+    if (index == 0) {
+      _element = node;
+      owner._becomeParentOf(node as AstNodeImpl);
+    } else {
+      throw RangeError("Index: $index, Size: 1");
+    }
+  }
+
+  @override
+  void accept(AstVisitor visitor) => _element.accept(visitor);
+}
+
+final class _NodeElementsTwo<E extends AstNode> extends _NodeElements<E> {
+  E _element0;
+  E _element1;
+
+  _NodeElementsTwo(this._element0, this._element1, AstNodeImpl owner) {
+    owner._becomeParentOf(_element0 as AstNodeImpl);
+    owner._becomeParentOf(_element1 as AstNodeImpl);
+  }
+
+  @override
+  Token? get beginToken => _element0.beginToken;
+
+  @override
+  Token? get endToken => _element1.beginToken;
+
+  @override
+  int get length => 2;
+
+  E _get(int index) {
+    switch(index) {
+      case 0: return _element0;
+      case 1: return _element1;
+      default: throw RangeError("Index: $index, Size: 2");
+    }
+  }
+
+  @override
+  void _set(int index, E node, AstNodeImpl owner) {
+    switch(index) {
+      case 0: _element0 = node;
+      case 1: _element1 = node;
+      default: throw RangeError("Index: $index, Size: 2");
+    }
+    owner._becomeParentOf(node as AstNodeImpl);
+  }
+
+  @override
+  void accept(AstVisitor visitor) {
+    _element0.accept(visitor);
+    _element1.accept(visitor);
+  }
+}
+
+final class _NodeElementsThree<E extends AstNode> extends _NodeElements<E> {
+  E _element0;
+  E _element1;
+  E _element2;
+
+  _NodeElementsThree(this._element0, this._element1, this._element2, AstNodeImpl owner) {
+    owner._becomeParentOf(_element0 as AstNodeImpl);
+    owner._becomeParentOf(_element1 as AstNodeImpl);
+    owner._becomeParentOf(_element2 as AstNodeImpl);
+  }
+
+  @override
+  Token? get beginToken => _element0.beginToken;
+
+  @override
+  Token? get endToken => _element2.beginToken;
+
+  @override
+  int get length => 3;
+
+  E _get(int index) {
+    switch(index) {
+      case 0: return _element0;
+      case 1: return _element1;
+      case 2: return _element2;
+      default: throw RangeError("Index: $index, Size: 3");
+    }
+  }
+
+  @override
+  void _set(int index, E node, AstNodeImpl owner) {
+    switch(index) {
+      case 0: _element0 = node;
+      case 1: _element1 = node;
+      case 2: _element2 = node;
+      default: throw RangeError("Index: $index, Size: 3");
+    }
+    owner._becomeParentOf(node as AstNodeImpl);
+  }
+
+  @override
+  void accept(AstVisitor visitor) {
+    _element0.accept(visitor);
+    _element1.accept(visitor);
+    _element2.accept(visitor);
+  }
+}
+
+final class _NodeElementsMultiple<E extends AstNode> extends _NodeElements<E> {
+  List<E> _elements;
+
+  _NodeElementsMultiple(List<E> elements, AstNodeImpl owner) : _elements = elements {
+    final length = _elements.length;
+    for (var i = 0; i < length; i++) {
+      var node = elements[i];
+      owner._becomeParentOf(node as AstNodeImpl);
+    }
+  }
+
+  @override
+  Token? get beginToken => _elements[0].beginToken;
+
+  @override
+  Token? get endToken => _elements.last.beginToken;
+
+  @override
+  int get length => _elements.length;
+
+  @override
+  E _get(int index) {
+    if (index < 0 || index >= _elements.length) {
+      throw RangeError("Index: $index, Size: ${_elements.length}");
+    }
+    return _elements[index];
+  }
+
+  @override
+  void _set(int index, E node, AstNodeImpl owner) {
+    if (index < 0 || index >= _elements.length) {
+      throw RangeError("Index: $index, Size: ${_elements.length}");
+    }
+    _elements[index] = node;
+    owner._becomeParentOf(node as AstNodeImpl);
+  }
+
+  @override
+  void accept(AstVisitor visitor) {
+    final length = _elements.length;
+    for (var i = 0; i < length; i++) {
+      _elements[i].accept(visitor);
+    }
+  }
+}
+
 final class NodeListImpl<E extends AstNode>
     with ListMixin<E>
     implements NodeList<E> {
   late final AstNodeImpl _owner;
 
-  late final List<E> _elements;
+  late final _NodeElements<E> _elements;
 
   /// Initializes a newly created list of nodes such that all of the nodes that
   /// are added to the list have their parent set to the given [owner].
@@ -12531,21 +12747,10 @@ final class NodeListImpl<E extends AstNode>
   NodeListImpl._();
 
   @override
-  Token? get beginToken {
-    if (_elements.isEmpty) {
-      return null;
-    }
-    return _elements[0].beginToken;
-  }
+  Token? get beginToken => _elements.beginToken;
 
   @override
-  Token? get endToken {
-    int length = _elements.length;
-    if (length == 0) {
-      return null;
-    }
-    return _elements[length - 1].endToken;
-  }
+  Token? get endToken => _elements.endToken;
 
   @override
   int get length => _elements.length;
@@ -12560,29 +12765,13 @@ final class NodeListImpl<E extends AstNode>
   AstNodeImpl get owner => _owner;
 
   @override
-  E operator [](int index) {
-    if (index < 0 || index >= _elements.length) {
-      throw RangeError("Index: $index, Size: ${_elements.length}");
-    }
-    return _elements[index];
-  }
+  E operator [](int index) => _elements._get(index);
 
   @override
-  void operator []=(int index, E node) {
-    if (index < 0 || index >= _elements.length) {
-      throw RangeError("Index: $index, Size: ${_elements.length}");
-    }
-    _elements[index] = node;
-    _owner._becomeParentOf(node as AstNodeImpl);
-  }
+  void operator []=(int index, E node) => _elements._set(index, node, _owner);
 
   @override
-  void accept(AstVisitor visitor) {
-    int length = _elements.length;
-    for (var i = 0; i < length; i++) {
-      _elements[i].accept(visitor);
-    }
-  }
+  void accept(AstVisitor visitor) => _elements.accept(visitor);
 
   @Deprecated('NodeList cannot be resized')
   @override
@@ -12617,14 +12806,25 @@ final class NodeListImpl<E extends AstNode>
   /// Set the [owner] of this container, and populate it with [elements].
   void _initialize(AstNodeImpl owner, List<E>? elements) {
     _owner = owner;
-    if (elements == null || elements.isEmpty) {
-      _elements = const <Never>[];
+    if (elements == null) {
+      _elements = _NodeElementsEmpty._instance;
     } else {
-      _elements = elements.toList(growable: false);
-      var length = elements.length;
-      for (var i = 0; i < length; i++) {
-        var node = elements[i];
-        owner._becomeParentOf(node as AstNodeImpl);
+      switch(elements.length) {
+        case 0: {
+          _elements = _NodeElementsEmpty._instance;
+        }
+        case 1: {
+          _elements = _NodeElementsSingle<E>(elements[0], owner);
+        }
+        case 2: {
+          _elements = _NodeElementsTwo<E>(elements[0], elements[1], owner);
+        }
+        case 3: {
+          _elements = _NodeElementsThree<E>(elements[0], elements[1], elements[2], owner);
+        }
+        default: {
+          _elements = _NodeElementsMultiple<E>(elements.toList(growable: false), owner);
+        }
       }
     }
   }
