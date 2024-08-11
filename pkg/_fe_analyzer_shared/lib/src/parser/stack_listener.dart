@@ -149,14 +149,26 @@ abstract class StackListener extends Listener with StackChecker {
     stack.push(node);
   }
 
+  void pushNonNull(Object node) {
+    stack.pushNonNull(node);
+  }
+
+  void pushNull(NullValue nullValue) {
+    stack.pushNull(nullValue);
+  }
+
   void pushIfNull(Token? tokenOrNull, NullValue nullValue) {
-    if (tokenOrNull == null) stack.push(nullValue);
+    if (tokenOrNull == null) stack.pushNull(nullValue);
   }
 
   Object? peek() => stack.isNotEmpty ? stack.last : null;
 
   Object? pop([NullValue? nullValue]) {
     return stack.pop(nullValue);
+  }
+
+  Object popNonNull() {
+    return stack.popNonNull();
   }
 
   Object? popIfNotNull(Object? value) {
@@ -431,6 +443,12 @@ abstract class Stack {
 
   void push(Object value);
 
+  /// Optimized [push] for values that are not [NullValue].
+  void pushNonNull(Object value);
+
+  /// Optimized [push] for a [NullValue].
+  void pushNull(NullValue nullValue);
+
   /// Will return [null] instead of [NullValue].
   Object? get last;
 
@@ -439,6 +457,9 @@ abstract class Stack {
   List<Object?> get values;
 
   Object? pop(NullValue? nullValue);
+
+  /// Optimized [pop] for when the stack element is not a [NullValue].
+  Object popNonNull();
 
   int get length;
 
@@ -468,9 +489,36 @@ class StackImpl implements Stack {
     return array[arrayLength - 1 - index];
   }
 
+  int _nullValueCount = 0;
+
   @override
   void push(Object value) {
     array[arrayLength++] = value;
+
+    if (value is NullValue) {
+      ++_nullValueCount;
+    }
+
+    if (array.length == arrayLength) {
+      _grow();
+    }
+  }
+
+  @override
+  void pushNonNull(Object value) {
+    assert(value is! NullValue);
+    array[arrayLength++] = value;
+
+    if (array.length == arrayLength) {
+      _grow();
+    }
+  }
+
+  @override
+  void pushNull(NullValue nullValue) {
+    array[arrayLength++] = nullValue;
+    ++_nullValueCount;
+
     if (array.length == arrayLength) {
       _grow();
     }
@@ -479,15 +527,34 @@ class StackImpl implements Stack {
   @override
   Object? pop(NullValue? nullValue) {
     assert(arrayLength > 0);
-    final Object? value = array[--arrayLength];
+    final Object value = array[--arrayLength]!;
     array[arrayLength] = null;
-    if (value is! NullValue) {
+
+    // Simplify logic by reducing use of "instanceOf" checks and
+    // multiple "if" statements:
+    if (_nullValueCount == 0) {
       return value;
-    } else if (nullValue == null || value == nullValue) {
-      return null;
+    } else if (value is NullValue) {
+      --_nullValueCount;
+      if (nullValue == null || identical(value, nullValue)) {
+        return null;
+      } else {
+        return value;
+      }
     } else {
       return value;
     }
+  }
+
+
+  @override
+  Object popNonNull() {
+    assert(arrayLength > 0);
+    final Object value = array[--arrayLength]!;
+    array[arrayLength] = null;
+
+    assert(value is! NullValue);
+    return value;
   }
 
   @override
@@ -499,10 +566,20 @@ class StackImpl implements Stack {
     bool isParserRecovery = false;
     for (int i = 0; i < count; i++) {
       int arrayIndex = startIndex + i;
-      final Object? value = array[arrayIndex];
+      final Object value = array[arrayIndex]!;
       array[arrayIndex] = null;
-      if (value is NullValue && nullValue == null ||
-          identical(value, nullValue)) {
+
+      // Simplify logic by reducing use of "instanceOf" checks and
+      // multiple "if" statements:
+      if (_nullValueCount == 0) {
+        if (value is ParserRecovery) {
+          isParserRecovery = true;
+        } else {
+          list[i] = value as T;
+        }
+      } else if (value is NullValue && (nullValue == null ||
+          identical(value, nullValue))) {
+        --_nullValueCount;
         list[i] = null;
       } else if (value is ParserRecovery) {
         isParserRecovery = true;
@@ -511,6 +588,7 @@ class StackImpl implements Stack {
         list[i] = value as T;
       }
     }
+
     arrayLength -= count;
 
     return isParserRecovery ? null : list;
@@ -527,12 +605,24 @@ class StackImpl implements Stack {
       int arrayIndex = startIndex + i;
       final Object? value = array[arrayIndex];
       array[arrayIndex] = null;
-      if (value is ParserRecovery) {
+
+      // Simplify logic by reducing use of "instanceOf" checks and
+      // multiple "if" statements:
+      if (_nullValueCount == 0) {
+        if (value is ParserRecovery) {
+          isParserRecovery = true;
+        } else {
+          list[i] = value as T;
+        }
+      } else if (value is NullValue) {
+        --_nullValueCount;
+      } else if (value is ParserRecovery) {
         isParserRecovery = true;
       } else {
         list[i] = value as T;
       }
     }
+
     arrayLength -= count;
 
     return isParserRecovery ? null : list;
@@ -592,6 +682,14 @@ class DebugStack implements Stack {
   }
 
   @override
+  Object popNonNull() {
+    Object result = realStack.popNonNull();
+    latestStacktraces.clear();
+    latestStacktraces.add(stackTraceStack.popNonNull() as StackTrace);
+    return result;
+  }
+
+  @override
   List<T?>? popList<T>(int count, List<T?> list, NullValue? nullValue) {
     List<T?>? result = realStack.popList(count, list, nullValue);
     latestStacktraces.length = count;
@@ -610,6 +708,18 @@ class DebugStack implements Stack {
   @override
   void push(Object value) {
     realStack.push(value);
+    stackTraceStack.push(StackTrace.current);
+  }
+
+  @override
+  void pushNonNull(Object value) {
+    realStack.pushNonNull(value);
+    stackTraceStack.push(StackTrace.current);
+  }
+
+  @override
+  void pushNull(NullValue nullValue) {
+    realStack.pushNull(nullValue);
     stackTraceStack.push(StackTrace.current);
   }
 
