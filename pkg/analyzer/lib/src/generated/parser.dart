@@ -74,7 +74,7 @@ class Parser {
     currentToken = fastaParser
         .parseArguments(fastaParser.syntheticPreviousToken(currentToken))
         .next!;
-    var invocation = astBuilder.pop() as MethodInvocation;
+    var invocation = astBuilder.popNonNull() as MethodInvocation;
     return invocation.argumentList.arguments[0];
   }
 
@@ -94,7 +94,7 @@ class Parser {
 
   CompilationUnitImpl parseCompilationUnit2() {
     currentToken = fastaParser.parseUnit(currentToken);
-    return astBuilder.pop() as CompilationUnitImpl;
+    return astBuilder.popNonNull() as CompilationUnitImpl;
   }
 
   Expression parseConditionalExpression() => parseExpression2();
@@ -103,7 +103,7 @@ class Parser {
     currentToken = fastaParser
         .parseConditionalUri(fastaParser.syntheticPreviousToken(currentToken))
         .next!;
-    return astBuilder.pop() as Configuration;
+    return astBuilder.popNonNull() as Configuration;
   }
 
   Expression parseConstExpression() => parseExpression2();
@@ -115,14 +115,14 @@ class Parser {
 
   CompilationUnit parseDirectives2() {
     currentToken = fastaParser.parseDirectives(currentToken);
-    return astBuilder.pop() as CompilationUnit;
+    return astBuilder.popNonNull() as CompilationUnit;
   }
 
   DottedName parseDottedName() {
     currentToken = fastaParser
         .parseDottedName(fastaParser.syntheticPreviousToken(currentToken))
         .next!;
-    return astBuilder.pop() as DottedName;
+    return astBuilder.popNonNull() as DottedName;
   }
 
   Expression parseEqualityExpression() => parseExpression2();
@@ -136,7 +136,7 @@ class Parser {
     currentToken = fastaParser
         .parseExpression(fastaParser.syntheticPreviousToken(currentToken))
         .next!;
-    return astBuilder.pop() as Expression;
+    return astBuilder.popNonNull() as Expression;
   }
 
   Expression parseExpressionWithoutCascade() => parseExpression2();
@@ -149,7 +149,7 @@ class Parser {
                 ? fasta.MemberKind.GeneralizedFunctionType
                 : fasta.MemberKind.NonStaticMethod)
         .next!;
-    return astBuilder.pop() as FormalParameterList;
+    return astBuilder.popNonNull() as FormalParameterList;
   }
 
   FunctionBody parseFunctionBody(
@@ -158,7 +158,7 @@ class Parser {
         fastaParser.syntheticPreviousToken(currentToken));
     currentToken =
         fastaParser.parseFunctionBody(currentToken, inExpression, mayBeEmpty);
-    return astBuilder.pop() as FunctionBody;
+    return astBuilder.popNonNull() as FunctionBody;
   }
 
   FunctionExpression parseFunctionExpression() =>
@@ -184,7 +184,7 @@ class Parser {
             fasta.IdentifierContext.expression,
             fasta.ConstantPatternContext.none)
         .next!;
-    return astBuilder.pop() as Expression;
+    return astBuilder.popNonNull() as Expression;
   }
 
   Expression parseRelationalExpression() => parseExpression2();
@@ -206,7 +206,7 @@ class Parser {
     currentToken = fastaParser
         .parseStatement(fastaParser.syntheticPreviousToken(currentToken))
         .next!;
-    return astBuilder.pop() as Statement;
+    return astBuilder.popNonNull() as Statement;
   }
 
   StringLiteral parseStringLiteral() => parseExpression2() as StringLiteral;
@@ -229,7 +229,7 @@ class Parser {
         .computeType(previous, true, !inExpression)
         .parseType(previous, fastaParser)
         .next!;
-    return astBuilder.pop() as TypeAnnotation;
+    return astBuilder.popNonNull() as TypeAnnotation;
   }
 
   TypeArgumentList parseTypeArgumentList() {
@@ -238,7 +238,7 @@ class Parser {
         .computeTypeParamOrArg(previous)
         .parseArguments(previous, fastaParser)
         .next!;
-    return astBuilder.pop() as TypeArgumentList;
+    return astBuilder.popNonNull() as TypeArgumentList;
   }
 
   NamedType parseTypeName(bool inExpression) {
@@ -247,7 +247,7 @@ class Parser {
         .computeType(previous, true, !inExpression)
         .parseType(previous, fastaParser)
         .next!;
-    return astBuilder.pop() as NamedType;
+    return astBuilder.popNonNull() as NamedType;
   }
 
   TypeParameter parseTypeParameter() {
