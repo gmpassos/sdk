@@ -83,6 +83,7 @@ String decodeString(Uint8List bytes, int start, int end, bool isAscii) {
 abstract class _Node {
   final String payload;
   _Node? next;
+  int usageCount = 1;
 
   _Node(this.payload, this.next);
 
@@ -90,8 +91,6 @@ abstract class _Node {
 }
 
 class _StringNode extends _Node {
-  int usageCount = 1;
-
   _StringNode(super.payload, super.next);
 
   @override
@@ -201,6 +200,7 @@ class _StringCanonicalizer {
             j++;
           }
           if (i == end) {
+            t.usageCount++;
             return t.payload;
           }
         }
@@ -221,12 +221,10 @@ class _StringCanonicalizer {
     final _Node? s = _nodes[index];
     _Node? t = s;
     while (t != null) {
-      if (t is _StringNode) {
-        final String tData = t.payload;
-        if (tData.length == len && data.startsWith(tData, start)) {
-          t.usageCount++;
-          return tData;
-        }
+      final String tData = t.payload;
+      if (tData.length == len && data.startsWith(tData, start)) {
+        t.usageCount++;
+        return tData;
       }
       t = t.next;
     }
@@ -240,12 +238,10 @@ class _StringCanonicalizer {
     final _Node? s = _nodes[index];
     _Node? t = s;
     while (t != null) {
-      if (t is _StringNode) {
-        final String tData = t.payload;
-        if (identical(data, tData) || data == tData) {
-          t.usageCount++;
-          return tData;
-        }
+      final String tData = t.payload;
+      if (identical(data, tData) || data == tData) {
+        t.usageCount++;
+        return tData;
       }
       t = t.next;
     }
