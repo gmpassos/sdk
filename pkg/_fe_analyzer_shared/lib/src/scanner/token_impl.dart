@@ -91,7 +91,7 @@ class StringTokenImpl extends SimpleToken implements StringToken {
       var lazySubstring = valueOrLazySubstring as _LazySubstring;
       Object data = lazySubstring.data;
       int start = lazySubstring.start;
-      int end = start + (lazySubstring as _LazySubstring).length;
+      int end = start + lazySubstring.length;
       if (data is String) {
         final bool canonicalize = lazySubstring.boolValue;
         return canonicalize

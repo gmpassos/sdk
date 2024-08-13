@@ -12573,6 +12573,7 @@ final class _NodeElementsSingle<E extends AstNode> extends _NodeElements<E> {
   @override
   int get length => 1;
 
+  @override
   E _get(int index) {
     if (index == 0) {
       return _element;
@@ -12613,6 +12614,7 @@ final class _NodeElementsTwo<E extends AstNode> extends _NodeElements<E> {
   @override
   int get length => 2;
 
+  @override
   E _get(int index) {
     switch(index) {
       case 0: return _element0;
@@ -12658,6 +12660,7 @@ final class _NodeElementsThree<E extends AstNode> extends _NodeElements<E> {
   @override
   int get length => 3;
 
+  @override
   E _get(int index) {
     switch(index) {
       case 0: return _element0;
@@ -12687,10 +12690,10 @@ final class _NodeElementsThree<E extends AstNode> extends _NodeElements<E> {
 }
 
 final class _NodeElementsMultiple<E extends AstNode> extends _NodeElements<E> {
-  List<E> _elements;
+  final List<E> _elements;
 
   _NodeElementsMultiple(List<E> elements, AstNodeImpl owner) : _elements = elements {
-    final length = _elements.length;
+    var length = _elements.length;
     for (var i = 0; i < length; i++) {
       var node = elements[i];
       owner._becomeParentOf(node as AstNodeImpl);
@@ -12725,7 +12728,7 @@ final class _NodeElementsMultiple<E extends AstNode> extends _NodeElements<E> {
 
   @override
   void accept(AstVisitor visitor) {
-    final length = _elements.length;
+    var length = _elements.length;
     for (var i = 0; i < length; i++) {
       _elements[i].accept(visitor);
     }
