@@ -76,7 +76,7 @@ class _Visitor extends SimpleAstVisitor<void> {
   @override
   void visitBinaryExpression(BinaryExpression node) {
     // This lint rule is only concerned with these operators.
-    if (!node.operator.matchesAny([
+    if (!node.operator.matchesAny(const [
       TokenType.EQ_EQ,
       TokenType.BANG_EQ,
       TokenType.GT,
@@ -155,7 +155,7 @@ class _Visitor extends SimpleAstVisitor<void> {
 
     var parentType = invocation.target?.staticType;
     if (parentType == null) return false;
-    if (!parentType.implementsAnyInterface([
+    if (!parentType.implementsAnyInterface(const [
       InterfaceTypeDefinition('Iterable', 'dart.core'),
       InterfaceTypeDefinition('String', 'dart.core'),
     ])) {

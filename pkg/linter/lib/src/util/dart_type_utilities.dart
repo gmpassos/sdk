@@ -243,7 +243,7 @@ class InterfaceTypeDefinition {
   final String name;
   final String library;
 
-  InterfaceTypeDefinition(this.name, this.library);
+  const InterfaceTypeDefinition(this.name, this.library);
 
   @override
   int get hashCode => name.hashCode ^ library.hashCode;
