@@ -46,6 +46,7 @@ ParseStringResult parseFile({
   ResourceProvider? resourceProvider,
   required FeatureSet featureSet,
   bool throwIfDiagnostics = true,
+  bool lazyFunctionBodyParsing = false,
 }) {
   resourceProvider ??= PhysicalResourceProvider.INSTANCE;
   var content = (resourceProvider.getResource(path) as File).readAsStringSync();
@@ -54,6 +55,7 @@ ParseStringResult parseFile({
     path: path,
     featureSet: featureSet,
     throwIfDiagnostics: throwIfDiagnostics,
+    lazyFunctionBodyParsing: lazyFunctionBodyParsing,
   );
 }
 
@@ -79,6 +81,7 @@ ParseStringResult parseString({
   FeatureSet? featureSet,
   String? path,
   bool throwIfDiagnostics = true,
+  bool lazyFunctionBodyParsing = false,
 }) {
   featureSet ??= FeatureSet.latestLanguageVersion();
   var source = StringSource(content, path ?? '');
@@ -100,6 +103,7 @@ ParseStringResult parseString({
     featureSet: scanner.featureSet,
     languageVersion: languageVersion,
     lineInfo: lineInfo,
+    lazyFunctionBodyParsing: lazyFunctionBodyParsing,
   );
   var unit = parser.parseCompilationUnit(token);
   ParseStringResult result = ParseStringResultImpl(
