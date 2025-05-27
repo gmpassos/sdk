@@ -40,14 +40,16 @@ ParseStringResult parseFile(
     {required String path,
     ResourceProvider? resourceProvider,
     required FeatureSet featureSet,
-    bool throwIfDiagnostics = true}) {
+    bool throwIfDiagnostics = true,
+    bool lazyFunctionBodyParsing = false}) {
   resourceProvider ??= PhysicalResourceProvider.INSTANCE;
   var content = (resourceProvider.getResource(path) as File).readAsStringSync();
   return parseString(
       content: content,
       path: path,
       featureSet: featureSet,
-      throwIfDiagnostics: throwIfDiagnostics);
+      throwIfDiagnostics: throwIfDiagnostics,
+      lazyFunctionBodyParsing: lazyFunctionBodyParsing);
 }
 
 /// Returns the result of parsing the given [content] as a compilation unit.
@@ -71,7 +73,8 @@ ParseStringResult parseString(
     {required String content,
     FeatureSet? featureSet,
     String? path,
-    bool throwIfDiagnostics = true}) {
+    bool throwIfDiagnostics = true,
+    bool lazyFunctionBodyParsing = false}) {
   featureSet ??= FeatureSet.latestLanguageVersion();
   var source = StringSource(content, path ?? '');
   var reader = CharSequenceReader(content);
@@ -88,6 +91,7 @@ ParseStringResult parseString(
     errorCollector,
     featureSet: scanner.featureSet,
     lineInfo: lineInfo,
+    lazyFunctionBodyParsing: lazyFunctionBodyParsing,
   );
   var unit = parser.parseCompilationUnit(token);
   ParseStringResult result =
