@@ -35,6 +35,7 @@ class Parser {
     bool allowNativeClause = true,
     required LibraryLanguageVersion languageVersion,
     required LineInfo lineInfo,
+    bool lazyFunctionBodyParsing = false,
   }) : astBuilder = AstBuilder(
          ErrorReporter(errorListener, source),
          source.uri,
@@ -47,6 +48,7 @@ class Parser {
       astBuilder,
       allowPatterns: featureSet.isEnabled(Feature.patterns),
       enableFeatureEnhancedParts: featureSet.isEnabled(Feature.enhanced_parts),
+      lazyFunctionBodyParsing: lazyFunctionBodyParsing,
     );
     astBuilder.parser = fastaParser;
     astBuilder.allowNativeClause = allowNativeClause;
