@@ -49,6 +49,7 @@ import '../scanner/token_constants.dart'
         KEYWORD_TOKEN,
         LT_TOKEN,
         OPEN_CURLY_BRACKET_TOKEN,
+        CLOSE_CURLY_BRACKET_TOKEN,
         OPEN_PAREN_TOKEN,
         OPEN_SQUARE_BRACKET_TOKEN,
         SEMICOLON_TOKEN,
@@ -334,11 +335,16 @@ class Parser {
   /// Whether the `enhanced-parts` feature is enabled.
   final bool enableFeatureEnhancedParts;
 
+  /// If `true`, [parseFunctionBody] skips detailed parsing of the function body,
+  /// locating only the closing curly bracket. Defaults to `false`.
+  final bool lazyFunctionBodyParsing;
+    
   Parser(
     this.listener, {
     this.useImplicitCreationExpression = true,
     this.allowPatterns = false,
     this.enableFeatureEnhancedParts = false,
+    this.lazyFunctionBodyParsing = false,
   }) : assert(listener != null); // ignore:unnecessary_null_comparison
 
   /// Executes [callback]; however if `this` is the `TestParser` (from
@@ -6142,6 +6148,29 @@ class Parser {
     loopState = LoopState.OutsideLoop;
     listener.beginBlockFunctionBody(begin);
     token = next;
+
+    if (lazyFunctionBodyParsing) {
+      token = token.next!;
+      var blockOpen = 1 ;
+
+      while (token.kind != EOF_TOKEN) {
+        if (token.kind == OPEN_CURLY_BRACKET_TOKEN || token.kind == STRING_INTERPOLATION_TOKEN) {
+          ++blockOpen;
+        }
+        else if (token.kind == CLOSE_CURLY_BRACKET_TOKEN) {
+          --blockOpen;
+          if (blockOpen == 0) break;
+        }
+
+        token = token.next!;
+      }
+
+      assert(token.isEof || token.isA(TokenType.CLOSE_CURLY_BRACKET));
+      listener.endBlockFunctionBody(statementCount, begin, token);
+      loopState = savedLoopState;
+      return token;
+    }
+      
     while (notEofOrValue('}', token.next!)) {
       Token startToken = token.next!;
       token = parseStatement(token);
